@@ -19,6 +19,8 @@ public class Climber extends Subsystem {
     // here. Call these from Commands.
 	Constants constants = Constants.getInstance();
 	TalonSRX climberM = new TalonSRX(constants.climbM);
+	TalonSRX climberM2 = new TalonSRX(constants.climbM2);
+	
 	
 	
     public void initDefaultCommand() {
@@ -27,28 +29,42 @@ public class Climber extends Subsystem {
     	//setDefaultCommand(new ClimbButton());
     }
     
+    public Climber(){
+    	climberM.changeControlMode(TalonControlMode.Follower);
+    	climberM.set(climberM2.getDeviceID());
+    }
+    
+    
+    //Match motors
     
     //Method to start climb motor
     public void climb(Joystick stick){
     	double speed = Math.abs(stick.getY());
     	
-    	climberM.set(-speed);
-   		//climberM.set(speed);//easy change between directions
+    	climberM.set(-speed);//alpha
+   		//climberM.set(speed);/beta
+    	matchMotors(climberM, climberM2);
     }
     //Code for climb button
     public void climbButton(){
-    	if(climberM.get() == 0){
+    	if(climberM2.get() == 0){
     		Robot.compressor.stop();//power management
-    		climberM.set(1);
+    		climberM2.set(1);
+    		//climberM2.set(1);
     	}else{
     		Robot.compressor.start();//power management
-    		climberM.set(0);
+    		//climberM.set(0);
+    		climberM2.set(0);
     	}
     }
     public void climbButtonStop(){
 		Robot.compressor.start();//power management
-    	climberM.set(0);
+    	//climberM.set(0);
+    	climberM2.set(0);
     }
+    private void matchMotors(TalonSRX leader, TalonSRX follower){
+    	follower.set(leader.get());
+    }    
 }
 
 

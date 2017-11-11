@@ -26,8 +26,12 @@ public class Gear extends Subsystem {
 	DoubleSolenoid pushPiston = new DoubleSolenoid(0,constants.pushGearOn, constants.pushGearOff);
 	DoubleSolenoid shieldS = new DoubleSolenoid(0, constants.shootShieldSolOn,constants.shootShieldSolOff);
 	
-		//Set solenoid values based off of which robot is being used
+	DoubleSolenoid hopper = new DoubleSolenoid(1, constants.hopperOn, constants.hopperOff);
+	
+	DoubleSolenoid gearLight = new DoubleSolenoid(1, constants.gearLightOn, constants.gearLightOff); 
+	//Set solenoid values based off of which robot is being used
 	public Gear(){
+		hopper.set(DoubleSolenoid.Value.kForward);
 		if(constants.alpha == false){
 			piston.set(DoubleSolenoid.Value.kReverse);
 			pushPiston.set(DoubleSolenoid.Value.kForward);
@@ -37,6 +41,7 @@ public class Gear extends Subsystem {
 			pushPiston.set(DoubleSolenoid.Value.kReverse);
 			shieldS.set(DoubleSolenoid.Value.kReverse);
 		}
+		gearLight.set(DoubleSolenoid.Value.kForward);
 	}
     public void initDefaultCommand() {
         // Set the default command for a subsystem here.
@@ -58,7 +63,15 @@ public class Gear extends Subsystem {
     	}	
     }
    
- 
+    
+    //Method for using the pistons for hopper
+    public void hopperPiston(){
+    	if(hopper.get() == DoubleSolenoid.Value.kForward){
+    		hopper.set(DoubleSolenoid.Value.kReverse);
+    	}else{
+    		hopper.set(DoubleSolenoid.Value.kForward);
+    	}		
+    }
     //Method for using the pistons for hockey stick
     public void gearPiston(){
     	//if(constants.alpha == true){
@@ -66,6 +79,12 @@ public class Gear extends Subsystem {
 	    		piston.set(DoubleSolenoid.Value.kReverse);
 	    	}else {
 	     		piston.set(DoubleSolenoid.Value.kForward);
+	    	}
+	    	if(Robot.drivetrain.gearUltraValue <= 2.5 + constants.ultrasonicTolerance){
+	    		gearLight.set(DoubleSolenoid.Value.kReverse);
+	    	}
+	    	if(Robot.drivetrain.gearUltraValue > 2.5 + constants.ultrasonicTolerance){
+	    		gearLight.set(DoubleSolenoid.Value.kForward);
 	    	}
 	  }
     //Method for using the piston to push gear out

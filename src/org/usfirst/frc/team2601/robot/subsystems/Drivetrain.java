@@ -51,7 +51,18 @@ public class Drivetrain extends Subsystem {
 	double leftMotorC;
 	double rightMotorC;
 	
+	
+	// Ultrasonics
+	public Ultrasonic gearUltra = new Ultrasonic(7, 6);
+	double gearUltraValue;
+	//public LidarLITE l = new LidarLITE(2,90);
+	
+	Ultrasonic climbUltra = new Ultrasonic(constants.climbUltraOutput, constants.climbUltraInput);
+	double climbUltraValue;
+
 	// Gyros
+	//public AnalogGyro gyro = new AnalogGyro(0); //- KoP
+	// Gyro (Replaced)
 	public AHRS gyro = new AHRS(SPI.Port.kMXP);
 	double gyroRate;
 	double gyroAngle;
@@ -60,11 +71,54 @@ public class Drivetrain extends Subsystem {
 	// more increase kp more left
 	// more decrease kp more right
 
+	// Encoders
+	public Encoder leftEnc = new Encoder(constants.leftEncPortI, constants.leftEncPortII, false, EncodingType.k4X);
+	double leftEncValue;
+	double leftEncDist;
+
+	public Encoder rightEnc = new Encoder(constants.rightEncPortI, constants.rightEncPortII, false, EncodingType.k4X);
+	double rightEncValue;
+	double rightEncDist;
+
+	// PID code for Drivetrain
+	PIDController leftSide = new PIDController(0.1, 0.001, 0.0, leftEnc, frontLeftMotor);
+	PIDController rightSide = new PIDController(0.1, 0.001, 0.0, rightEnc, frontRightMotor);
+
 	// Put methods for controlling this subsystem
 	// here. Call these from Commands.
 	public Drivetrain() {
+		// rightShift.set(DoubleSolenoid.Value.kForward);
+		// Shifter
 		driveShift.set(DoubleSolenoid.Value.kReverse);
+		/*
+		 * backLeftMotor.changeControlMode(TalonSRX.TalonControlMode.Follower);
+		 * backLeftMotor.set(frontLeftMotor.getDeviceID());
+		 * 
+		 * middleLeftMotor.changeControlMode(TalonSRX.TalonControlMode.Follower)
+		 * ; middleLeftMotor.set(frontLeftMotor.getDeviceID());
+		 * 
+		 * backRightMotor.changeControlMode(TalonSRX.TalonControlMode.Follower);
+		 * backRightMotor.set(frontRightMotor.getDeviceID());
+		 * 
+		 * middleRightMotor.changeControlMode(TalonSRX.TalonControlMode.Follower
+		 * ); middleRightMotor.set(frontRightMotor.getDeviceID());
+		 */
+
+		// ready Encoders
+		leftEnc.reset();
+		rightEnc.reset();
+
+		// ready Ultrasonics
+		gearUltra.setEnabled(true);
+		gearUltra.setAutomaticMode(true);
+
+		climbUltra.setEnabled(true);
+		climbUltra.setAutomaticMode(true);
+
+		constants.ultraBool = false;
+
 		// ready Gyros
+		// gyro.initGyro(); this and calibrate are taken out to use the new gyro
 		gyro.reset();
 		gyro.zeroYaw(); 
 
@@ -108,6 +162,19 @@ public class Drivetrain extends Subsystem {
 		SmartDashboard.putNumber("GyroAngle", gyroAngle);
 		SmartDashboard.putNumber("GetBoardAxis", gyro.getBoardYawAxis().board_axis.getValue());
 
+		// Output Enc values to SD
+		leftEncValue = leftEnc.getRate();
+		SmartDashboard.putNumber("LeftEncValue", leftEncValue);
+
+		leftEncDist = leftEnc.getDistance();
+		SmartDashboard.putNumber("LeftEncDist", leftEncDist);
+
+		rightEncValue = rightEnc.getRate();
+		SmartDashboard.putNumber("RightEncValue", rightEncValue);
+
+		rightEncDist = rightEnc.getDistance();
+		SmartDashboard.putNumber("RightEncDist", rightEncDist);
+
 		// Output shift value to SD
 		SmartDashboard.putBoolean("High Gear", gear);
 	}
@@ -138,6 +205,201 @@ public class Drivetrain extends Subsystem {
 		matchMotors(frontLeftMotor, middleLeftMotor);
 		matchMotors(frontRightMotor,backRightMotor);
 		matchMotors(frontRightMotor, middleRightMotor);
+	}
+	
+	public void EncGyroForward(double leftDist, double rightDist) {
+		gyroAngle = gyro.getAngle();
+
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+		System.out.println("Straight");
+		System.out.println(gyroAngle);
+		// double newK = SmartDashboard.getDouble("kP");
+		drive.tankDrive(-0.75, gyroAngle * kP);// *newkP);//ALPHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+		//drive.drive(0.75, gyroAngle * kP);
+		matchMotors(frontLeftMotor, backLeftMotor);
+		// matchMotors(frontLeftMotor, middleLeftMotor);
+		matchMotors(frontRightMotor, backRightMotor);
+		// matchMotors(frontRightMotor, middleRightMotor);
+
+		if (leftEncDist > leftDist && -rightEncDist > rightDist) {
+			constants.ultraBool = true;
+		}
+		if (leftEncDist <= leftDist && -rightEncDist <= rightDist) {
+			constants.ultraBool = false;
+		}
+
+	}
+	public void EncGyroForwardSlow(double leftDist, double rightDist) {
+		gyroAngle = gyro.getAngle();
+		
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+		//System.out.println("Straight");
+		//System.out.println(gyroAngle);
+		// double newK = SmartDashboard.getDouble("kP");
+		drive.tankDrive(-0.35, gyroAngle * kP);// *newkP);//ALPHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+		//drive.drive(0.75, gyroAngle * kP);
+		matchMotors(frontLeftMotor, backLeftMotor);
+		// matchMotors(frontLeftMotor, middleLeftMotor);
+		matchMotors(frontRightMotor, backRightMotor);
+		// matchMotors(frontRightMotor, middleRightMotor);
+
+		if (leftEncDist > leftDist && -rightEncDist > rightDist) {
+			constants.ultraBool = true;
+		}
+		if (leftEncDist <= leftDist && -rightEncDist <= rightDist) {
+			constants.ultraBool = false;
+		}
+
+	}
+
+	public void EncGyroBackward(double leftDist, double rightDist) {
+		gyroAngle = gyro.getAngle();
+
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+
+		drive.tankDrive(0.5, gyroAngle * kPb);//ALPHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+		//drive.drive(-0.5, gyroAngle*kPb);
+		matchMotors(frontLeftMotor, backLeftMotor);
+		// matchMotors(frontLeftMotor, middleLeftMotor);
+		matchMotors(frontRightMotor, backRightMotor);
+		// matchMotors(frontRightMotor, middleRightMotor);
+
+		if (-leftEncDist + 10 > leftDist && rightEncDist + 10 > rightDist) {
+			constants.ultraBool = true;
+		}
+		if (-leftEncDist + 10 <= leftDist && rightEncDist + 10 <= rightDist) {
+			constants.ultraBool = false;
+		}
+
+	}
+
+	public void forwardGyroUltra(double distance) {
+		gyroAngle = gyro.getAngle();
+		gearUltraValue = gearUltra.getRangeInches();
+		drive.tankDrive(-0.5, gyroAngle * kP);
+		matchMotors(frontLeftMotor, backLeftMotor);
+		matchMotors(frontLeftMotor, middleLeftMotor);
+		matchMotors(frontRightMotor, backRightMotor);
+		matchMotors(frontRightMotor, middleRightMotor);
+
+		if (gearUltraValue <= distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = true;
+		}
+		if (gearUltraValue > distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = false;
+		}
+	}
+
+	public void forwardEncoder(double distance) {
+
+		// leftEnc.reset();
+		// rightEnc.reset();
+
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+
+		double leftEncDistUse = leftEncDist - distance;
+		double rightEncDistUse = rightEncDist + distance;
+
+		leftEncDist = leftEnc.getDistance();
+		SmartDashboard.putNumber("LeftEncDist", leftEncDist);
+
+		rightEncDist = rightEnc.getDistance();
+		SmartDashboard.putNumber("RightEncDist", rightEncDist);
+
+		if (-leftEncDist + 50 < distance && rightEncDist + 50 < distance) {
+			frontLeftMotor.set(0.5);
+			frontRightMotor.set(-0.5);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = false;
+		}
+		if (-leftEncDist + 50 >= distance && rightEncDist + 50 >= distance) {
+			frontLeftMotor.set(0);
+			frontRightMotor.set(0);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = true;
+		}
+
+		if (gearUltraValue <= distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = true;
+		}
+		if (gearUltraValue > distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = false;
+		}
+	}
+
+	public void forwardEncoder(double lDistance, double rDistance) {
+
+		// leftEnc.reset();
+		// rightEnc.reset();
+
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+
+		leftEncDist = leftEnc.getDistance();
+		SmartDashboard.putNumber("LeftEncDist", leftEncDist);
+
+		rightEncDist = rightEnc.getDistance();
+		SmartDashboard.putNumber("RightEncDist", rightEncDist);
+
+		if (-leftEncDist + 50 < lDistance && rightEncDist + 50 < rDistance) {
+			frontLeftMotor.set(-0.75);
+			frontRightMotor.set(0.75);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = false;
+		}
+		if (-leftEncDist + 50 >= lDistance && rightEncDist + 50 >= rDistance) {
+			frontLeftMotor.set(0);
+			frontRightMotor.set(0);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = true;
+		}
+	}
+
+	public void backwardEncoder(double distance) {
+
+		leftEncDist = leftEnc.getDistance();
+		rightEncDist = rightEnc.getDistance();
+
+		leftEncDist = leftEnc.getDistance();
+		SmartDashboard.putNumber("LeftEncDist", leftEncDist);
+
+		rightEncDist = rightEnc.getDistance();
+		SmartDashboard.putNumber("RightEncDist", rightEncDist);
+
+		if (leftEncDist + 50 < distance && -rightEncDist + 50 < distance) {
+			frontLeftMotor.set(0.5);
+			frontRightMotor.set(-0.5);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = false;
+		}
+		if (leftEncDist + 50 >= distance && -rightEncDist + 50 >= distance) {
+			frontLeftMotor.set(0);
+			frontRightMotor.set(0);
+			matchMotors(frontLeftMotor, backLeftMotor);
+			matchMotors(frontLeftMotor, middleLeftMotor);
+			matchMotors(frontRightMotor, backRightMotor);
+			matchMotors(frontRightMotor, middleRightMotor);
+			constants.moveEnc = true;
+		}
 	}
 
 	public void gyroLock(double desiredAngle) {
@@ -235,5 +497,23 @@ public class Drivetrain extends Subsystem {
 		middleLeftMotor.set(0);
 		backRightMotor.set(0);
 		middleRightMotor.set(0);
+	}
+
+	public void forwardUltra(double distance) {
+
+		gearUltraValue = gearUltra.getRangeInches();
+		frontLeftMotor.set(0.75);
+		frontRightMotor.set(0.75);
+		matchMotors(frontLeftMotor, backLeftMotor);
+		matchMotors(frontLeftMotor, middleLeftMotor);
+		matchMotors(frontRightMotor, backRightMotor);
+		matchMotors(frontRightMotor, middleRightMotor);
+
+		if (gearUltraValue <= distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = true;
+		}
+		if (gearUltraValue > distance + constants.ultrasonicTolerance) {
+			constants.moveUltra = false;
+		}
 	}
 }

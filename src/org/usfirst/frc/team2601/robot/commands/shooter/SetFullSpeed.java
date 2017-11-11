@@ -1,30 +1,38 @@
-package org.usfirst.frc.team2601.robot.commands;
+package org.usfirst.frc.team2601.robot.commands.shooter;
+
+import org.usfirst.frc.team2601.robot.Constants;
+import org.usfirst.frc.team2601.robot.Robot;
 
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class TimeDelay extends Command {
+public class SetFullSpeed extends Command {
+
+	//private static double setS = 0;
 	
+	Constants constants = Constants.getInstance();
 	
-    public TimeDelay(double timeout) {
+    public SetFullSpeed(){
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-    	setTimeout(timeout);
+    	requires(Robot.shooter);
     }
-
+    
     // Called just before this Command runs the first time
     protected void initialize() {
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+//    	Robot.shooter.agitator = false;
+    	Robot.shooter.shootPID();
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return isTimedOut();
+        return false;
     }
 
     // Called once after isFinished returns true

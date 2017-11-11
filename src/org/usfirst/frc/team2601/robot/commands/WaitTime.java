@@ -1,17 +1,22 @@
 package org.usfirst.frc.team2601.robot.commands;
 
+import org.usfirst.frc.team2601.robot.Constants;
+import org.usfirst.frc.team2601.robot.Robot;
+
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class TimeDelay extends Command {
+public class WaitTime extends Command {
+
+	Constants constants = Constants.getInstance();
 	
-	
-    public TimeDelay(double timeout) {
+    public WaitTime(double time) {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
-    	setTimeout(timeout);
+    	setTimeout(time);
+
     }
 
     // Called just before this Command runs the first time
@@ -20,6 +25,7 @@ public class TimeDelay extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
@@ -29,6 +35,7 @@ public class TimeDelay extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	constants.ultraBool = true;
     }
 
     // Called when another command which requires one or more of the same
