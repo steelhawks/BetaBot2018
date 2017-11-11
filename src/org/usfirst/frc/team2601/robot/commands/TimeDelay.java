@@ -6,8 +6,7 @@ import edu.wpi.first.wpilibj.command.Command;
  *
  */
 public class TimeDelay extends Command {
-	
-	
+
     public TimeDelay(double timeout) {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
