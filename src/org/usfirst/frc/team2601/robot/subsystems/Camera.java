@@ -40,7 +40,7 @@ public class Camera extends Subsystem {
 	
 	Constants constants = Constants.getInstance();
 	NetworkTableInstance server = NetworkTableInstance.getDefault();
-	NetworkTableEntry entry1 = server.getEntry("centerX");
+	NetworkTableEntry centerX = server.getEntry("centerX");
 	
 	//Camera servo
 	Servo servo = new Servo(constants.camServo);
@@ -87,19 +87,19 @@ public class Camera extends Subsystem {
 		Number[] xValues = new Double[2];
 		Double[] height = new Double[xValues.length];
 		//19.5 cm
-		try{
+		//try{
 			//int contoursFound = 
 			//Imgproc.boundingRect(points)
-			xValues = entry1.getNumberArray(smth);
+			xValues = centerX.getNumberArray(smth);
     		//xValues = server.getNumberArray("centerX", smth);
     		//height = server.getNumberArray("height", smth2);
     		//System.out.println("got values");
     		
-    	}
-    	catch(TableKeyNotDefinedException exp){
+    	//}
+    	//catch(TableKeyNotDefinedException exp){
     		//System.out.println("No Values");
     		//throw exp;
-    	}
+    	//}
 		
 			try{
 				
