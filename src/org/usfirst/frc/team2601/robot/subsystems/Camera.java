@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.networktables.*;
 //import edu.wpi.first.wpilibj.networktables2.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-//import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
+import edu.wpi.first.wpilibj.tables.*;
 
 /**
  *
@@ -40,10 +40,11 @@ public class Camera extends Subsystem {
 	
 	Constants constants = Constants.getInstance();
 	NetworkTableInstance server = NetworkTableInstance.getDefault();
+	NetworkTableEntry entry1 = server.getEntry("centerX");
 	
 	//Camera servo
 	Servo servo = new Servo(constants.camServo);
-	
+
 	public boolean align = false;
 	public ArrayList<Double> k = new ArrayList<Double>(2);
 	public int i = 0;
@@ -75,7 +76,6 @@ public class Camera extends Subsystem {
     
     //Vision
     public void getGearPosition(){
-    	//NetworkTable server = NetworkTable.getTable("GRIP/myContoursReport");
     	server.getTable("GRIP/myContoursReport");
     	
     	
@@ -84,13 +84,14 @@ public class Camera extends Subsystem {
 		Double[] smth2 = new Double[2];
 		smth[0] = 150.0;
 		smth[1] = 500.0;
-		Double[] xValues = new Double[2];
+		Number[] xValues = new Double[2];
 		Double[] height = new Double[xValues.length];
 		//19.5 cm
-		/*try{
+		try{
 			//int contoursFound = 
 			//Imgproc.boundingRect(points)
-    		xValues = server.getNumberArray("centerX", smth);
+			xValues = entry1.getNumberArray(smth);
+    		//xValues = server.getNumberArray("centerX", smth);
     		//height = server.getNumberArray("height", smth2);
     		//System.out.println("got values");
     		
@@ -98,13 +99,13 @@ public class Camera extends Subsystem {
     	catch(TableKeyNotDefinedException exp){
     		//System.out.println("No Values");
     		//throw exp;
-    	}*/   
+    	}
 		
 			try{
 				
 				//System.out.println("PAST IF");
 		    	double gearMid = 320;
-				double mid = Math.abs((xValues[0] + xValues[1])/2);
+				double mid = Math.abs((xValues[0].doubleValue() + xValues[1].doubleValue())/2);
 				double offset = 3;
 				
 				SmartDashboard.putBoolean("aligned", align);
