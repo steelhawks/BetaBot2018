@@ -23,7 +23,7 @@ public class Constants {
 	}
 
 	public static boolean alpha = true;
-	public static boolean operatorJS = true;//if using joystick for operating
+	public static boolean operatorJS = false;//if using joystick for operating
 	//Joysticks
 	public final static int dJSPort = 0;
 	public final static int oJSPort = 1;
