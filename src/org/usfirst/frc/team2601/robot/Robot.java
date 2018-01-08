@@ -1,4 +1,3 @@
-
 package org.usfirst.frc.team2601.robot;
 
 import edu.wpi.cscore.CvSink;
